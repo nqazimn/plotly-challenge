@@ -25,6 +25,8 @@ function displayDemographics(demographics) {
     var table = d3.select("#sample-metadata").
         select("table");
 
+    table.html("");
+
     // // Append table headers
     Object.entries(demographics).forEach(function ([key, value]) {
         var row = table.append("tr");
@@ -55,6 +57,71 @@ function displayDemographics(demographics) {
     });
 }
 
+function plotOTUs(OTUdata) {
+    console.log(OTUdata.sample_values.slice(0, 11));
+    console.log(OTUdata.otu_ids.slice(0, 11));
+    console.log(OTUdata.otu_labels.slice(0, 11));
+
+    var xValues = OTUdata.sample_values.slice(0, 11);
+    var yValues = OTUdata.otu_ids.slice(0, 11);
+    var bacteriaLabels = OTUdata.otu_labels.slice(0, 11);
+
+    var sumOfxValues = xValues.reduce(function (a, b) {
+        return a + b;
+    }, 0);
+
+    var percentageOfxValues = xValues.map(function (item) {
+        return parseFloat((item / sumOfxValues).toFixed(2));
+    });
+
+    var yValuesModified = yValues.map(function (item) {
+        return `OTU ${+item}  `;
+    })
+
+    var labels = bacteriaLabels.map(function (item) {
+        return item.replace(/;/g, "<br>")
+    })
+
+    console.log(percentageOfxValues);
+
+    var trace = {
+        x: percentageOfxValues,
+        y: yValuesModified,
+        data: xValues,
+        type: "bar",
+        orientation: "h",
+        name: "OTU",
+        text: labels,
+        marker: {
+            color: 'rgba(50,171,96,0.6)',
+            line: {
+                color: 'rgba(50,171,96,1.0)',
+                width: 0
+            }
+        },
+        hovertemplate:
+            "Percentage: %{x}<br><br>" +
+            "%{text}" +
+            "<extra></extra>"
+    }
+
+    var layout = {
+        title: "Percentage of OTUs",
+        yaxis: {
+            autorange: "reversed",
+        },
+        xaxis: {
+            tickformat: ',.0%',
+            range: [0, 1],
+            side: "top"
+        }
+    };
+
+    var data = [trace];
+
+    Plotly.newPlot("bar", data, layout)
+}
+
 function updateDashboardByID() {
     // Get Subject ID selected by User    
     var ID = d3.select("#selDataset").property("value");
@@ -65,10 +132,13 @@ function updateDashboardByID() {
         // and pass that index to data.metadata to grab demographics
         let index = data.names.indexOf(ID);
         var demographics = data.metadata[index];
+        var OTUdata = data.samples[index];
 
         console.log(demographics);
+        console.log(OTUdata);
 
         displayDemographics(demographics);
+        plotOTUs(OTUdata);
 
     });
 }
