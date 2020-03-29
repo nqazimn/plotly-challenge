@@ -57,37 +57,46 @@ function displayDemographics(demographics) {
     });
 }
 
-function plotOTUs(OTUdata) {
+function prettifyOTULabels(item) {
+    // Replaces ";" with new0line character in a given string to increase readability
+    return item.replace(/;/g, "<br>");
+}
+
+function prettifyAxisLabels(item) {
+    // Adds string OTU before otu_label from the data to increase readability
+    return `OTU ${+item}`;
+}
+
+function calcPercentage(array) {
+    var sumOfArray = array.reduce(function (a, b) {
+        return a + b;
+    }, 0);
+
+    var percentage = array.map(function (item) {
+        return parseFloat((item / sumOfArray).toFixed(2));
+    });
+
+    return percentage;
+}
+
+function createBarChart(OTUdata) {
     console.log(OTUdata.sample_values.slice(0, 11));
     console.log(OTUdata.otu_ids.slice(0, 11));
     console.log(OTUdata.otu_labels.slice(0, 11));
 
     var xValues = OTUdata.sample_values.slice(0, 11);
     var yValues = OTUdata.otu_ids.slice(0, 11);
-    var bacteriaLabels = OTUdata.otu_labels.slice(0, 11);
+    var OTULabels = OTUdata.otu_labels.slice(0, 11);
 
-    var sumOfxValues = xValues.reduce(function (a, b) {
-        return a + b;
-    }, 0);
+    var percentageOfxValues = calcPercentage(xValues);
 
-    var percentageOfxValues = xValues.map(function (item) {
-        return parseFloat((item / sumOfxValues).toFixed(2));
-    });
+    var yValuesModified = yValues.map(prettifyAxisLabels);
 
-    var yValuesModified = yValues.map(function (item) {
-        return `OTU ${+item}  `;
-    })
-
-    var labels = bacteriaLabels.map(function (item) {
-        return item.replace(/;/g, "<br>")
-    })
-
-    console.log(percentageOfxValues);
+    var labels = OTULabels.map(prettifyOTULabels);
 
     var trace = {
         x: percentageOfxValues,
         y: yValuesModified,
-        data: xValues,
         type: "bar",
         orientation: "h",
         name: "OTU",
@@ -109,6 +118,9 @@ function plotOTUs(OTUdata) {
         title: "Percentage of OTUs",
         yaxis: {
             autorange: "reversed",
+            ticks: "outside",
+            ticklen: 10,
+            tickcolor: "white"
         },
         xaxis: {
             tickformat: ',.0%',
@@ -119,8 +131,58 @@ function plotOTUs(OTUdata) {
 
     var data = [trace];
 
-    Plotly.newPlot("bar", data, layout)
+    Plotly.newPlot("bar", data, layout);
 }
+
+function createBubbleChart(OTUdata) {
+    var xValues = OTUdata.otu_ids;
+    var yValues = OTUdata.sample_values;
+    var OTULabels = OTUdata.otu_labels;
+
+    var percentageOfyValues = calcPercentage(yValues);
+
+    var trace = {
+        x: xValues,
+        y: yValues,
+        text: OTULabels.map(prettifyOTULabels),
+        type: "scatter",
+        mode: "markers",
+        marker: {
+            size: yValues,
+            sizeref: 0.1,
+            sizemode: "area",
+        },
+        transforms: [{
+            type: "groupby",
+            groups: xValues
+        }],
+        hovertemplate:
+            "Count: %{y}<br><br>" +
+            "%{text}" +
+            "<extra></extra>"
+    }
+
+    var layout = {
+        title: "Breakdown of OTUs in Belly Button",
+        yaxis: {
+            ticks: "outside",
+            ticklen: 5,
+            tickcolor: "white",
+            title: "Count of OTU"
+        },
+        xaxis: {
+            title: "OTU ID"
+        },
+        showlegend: false
+    };
+
+    var data = [trace];
+
+    Plotly.newPlot('bubble', data, layout);
+
+}
+
+
 
 function updateDashboardByID() {
     // Get Subject ID selected by User    
@@ -138,7 +200,8 @@ function updateDashboardByID() {
         console.log(OTUdata);
 
         displayDemographics(demographics);
-        plotOTUs(OTUdata);
+        createBarChart(OTUdata);
+        createBubbleChart(OTUdata);
 
     });
 }
