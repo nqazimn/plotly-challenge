@@ -120,12 +120,22 @@ function createBarChart(OTUdata) {
             autorange: "reversed",
             ticks: "outside",
             ticklen: 10,
-            tickcolor: "white"
+            tickcolor: "white",
+            linecolor: 'gray',
+            linewidth: 0.01,
+            mirror: true
         },
         xaxis: {
             tickformat: ',.0%',
             range: [0, 1],
-            side: "top"
+            side: "top",
+            tickmode: "linear",
+            tick0: 0,
+            dtick: 0.25,
+            border: 1,
+            linecolor: 'gray',
+            linewidth: 0.5,
+            mirror: true
         }
     };
 
@@ -149,7 +159,7 @@ function createBubbleChart(OTUdata) {
         mode: "markers",
         marker: {
             size: yValues,
-            sizeref: 0.1,
+            sizeref: 0.05,
             sizemode: "area",
         },
         transforms: [{
@@ -168,7 +178,8 @@ function createBubbleChart(OTUdata) {
             ticks: "outside",
             ticklen: 5,
             tickcolor: "white",
-            title: "Count of OTU"
+            title: "Count of OTU",
+
         },
         xaxis: {
             title: "OTU ID"
@@ -182,7 +193,74 @@ function createBubbleChart(OTUdata) {
 
 }
 
+function createGauge(demographics) {
+    var washingFrequency = Math.round(demographics.wfreq);
 
+    console.log(demographics.wfreq);
+
+    var data = [
+        {
+            domain: { x: [0, 1], y: [0, 1] },
+            value: parseInt(washingFrequency),
+            title: { text: "Washing Frequency <br>(scrubs per week)" },
+            type: "indicator",
+            mode: "gauge+number",
+            text: ["0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7", "7-8", "8-9"],
+            textinfo: "text",
+            textposition: "inside",
+            // delta: { reference: 1 },
+            gauge: {
+                axis: { range: [0, 9] },
+                steps: [
+                    { range: [8, 9], color: 'rgb(128,181,134)' },
+                    { range: [7, 8], color: 'rgb(133,188,139)' },
+                    { range: [6, 7], color: 'rgb(135,192,128)' },
+                    { range: [5, 6], color: 'rgb(183,205,139)', },
+                    { range: [4, 5], color: 'rgb(213,229,149)' },
+                    { range: [3, 4], color: 'rgb(229,233,177)' },
+                    { range: [2, 3], color: 'rgb(233,231,201)' },
+                    { range: [1, 2], color: 'rgb(243,240,229)' },
+                    { range: [0, 1], color: 'rgb(247,242,236)' }
+
+                ],
+                threshold: {
+                    line: { color: "red", width: 3 },
+                    thickness: 0.75,
+                    value: parseInt(washingFrequency)
+                }
+            }
+        }
+    ];
+
+    var layout = {
+        width: 600,
+        height: 450,
+        margin: { t: 0, b: 0 },
+    };
+    Plotly.newPlot('gauge', data, layout);
+}
+
+function initializeDashboard() {
+
+    d3.json(microbes_samples).then(function (data) {
+        // Initialize by the first ID available in the data
+        var ID = data.names[0];
+        // Find index of user selected ID in data.names
+        // and pass that index to data.metadata to grab demographics
+        let index = data.names.indexOf(ID);
+        var demographics = data.metadata[index];
+        var OTUdata = data.samples[index];
+
+        console.log(demographics);
+        console.log(OTUdata);
+
+        displayDemographics(demographics);
+        createBarChart(OTUdata);
+        createGauge(demographics);
+        createBubbleChart(OTUdata);
+
+    });
+}
 
 function updateDashboardByID() {
     // Get Subject ID selected by User    
@@ -201,6 +279,7 @@ function updateDashboardByID() {
 
         displayDemographics(demographics);
         createBarChart(OTUdata);
+        createGauge(demographics);
         createBubbleChart(OTUdata);
 
     });
@@ -208,4 +287,5 @@ function updateDashboardByID() {
 
 // Function calls here
 appendIDsToDropdown();
+initializeDashboard();
 d3.selectAll("#selDataset").on("change", updateDashboardByID);

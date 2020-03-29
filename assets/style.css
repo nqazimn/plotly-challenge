@@ -6,4 +6,31 @@
 table{
 	border-collapse: separate;
 	border-spacing:5px;
+}
+.parent-container{
+	border-style: solid;
+	border-color: black;
+	padding:20px;	
+}
+.container{
+	/* border-style: solid; */
+	/* border-color: black; */
+	padding:10px;
+	margin:0 auto;
+	/* display: inline-block; */
+}
+.container-left{
+	/* border: solid; */
+	/* border-color: black; */
+	/* border-style: solid; */
+	padding:1px;
+	margin:1px
 }	
+.container-right{
+	/* border: solid; */
+	/* border-color: black; */
+	/* border-style: solid; */
+	padding:1px;
+	margin:1px
+}
+
