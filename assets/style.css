@@ -8,8 +8,8 @@ table{
 	border-spacing:5px;
 }
 .parent-container{
-	border-style: solid;
-	border-color: black;
+	/* border-style: solid; */
+	/* border-color: black; */
 	padding:20px;	
 }
 .container{
