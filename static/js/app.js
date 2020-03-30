@@ -1,4 +1,4 @@
-const microbes_samples = "../../../samples.json"
+const microbes_samples = "samples.json"
 
 function appendIDsToDropdown() {
     d3.json(microbes_samples).then(function (data) {
